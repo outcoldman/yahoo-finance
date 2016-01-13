@@ -17,7 +17,7 @@ def edt_to_utc(date, mask='%m/%d/%Y %I:%M%p'):
     :return: UTC date string e.g '2014-03-05 12:23:00 UTC+0000'
     """
     utc = pytz.utc
-    eastern = pytz.timezone('US/Eastern')
+    eastern = pytz.timezone('America/New_York')
     # date string for yahoo can contains 0 rather than 12.
     # This means that it cannot be parsed with %I see GH issue #15.
     date_ = datetime.strptime(date.replace(" 0:", " 12:"), mask)
@@ -157,7 +157,7 @@ class Currency(Base):
 
     def _fetch(self):
         data = super(Currency, self)._fetch()
-        if data['Date'] and data['Time']:
+        if data.get('Date') and data.get('Time'):
             data[u'DateTimeUTC'] = edt_to_utc('{0} {1}'.format(data['Date'], data['Time']))
         return data
 
@@ -184,7 +184,7 @@ class Share(Base):
 
     def _fetch(self):
         data = super(Share, self)._fetch()
-        if data['LastTradeDate'] and data['LastTradeTime']:
+        if data.get('LastTradeDate') and data.get('LastTradeTime'):
             data[u'LastTradeDateTimeUTC'] = edt_to_utc('{0} {1}'.format(data['LastTradeDate'], data['LastTradeTime']))
         return data
 

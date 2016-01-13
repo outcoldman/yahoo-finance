@@ -149,11 +149,12 @@ class Base(object):
 
 class Currency(Base):
 
-    def __init__(self, symbol):
+    def __init__(self, symbol, autorefresh=True):
         super(Currency, self).__init__(symbol)
         self._table = 'xchange'
         self._key = 'pair'
-        self.refresh()
+        if autorefresh:
+            self.refresh()
 
     def _fetch(self):
         data = super(Currency, self)._fetch()
@@ -184,7 +185,7 @@ class Share(Base):
 
     def _fetch(self):
         data = super(Share, self)._fetch()
-        if data.get('LastTradeDate') and data.get('LastTradeTime'):
+        if data and data.get('LastTradeDate') and data.get('LastTradeTime'):
             data[u'LastTradeDateTimeUTC'] = edt_to_utc('{0} {1}'.format(data['LastTradeDate'], data['LastTradeTime']))
         return data
 

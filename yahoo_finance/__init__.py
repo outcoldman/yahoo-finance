@@ -76,6 +76,7 @@ class Base(object):
         self.symbol = symbol
         self._table = ''
         self._key = ''
+        self._query = None
 
     def _prepare_query(self, table='quotes', key='symbol', **kwargs):
         """
@@ -115,7 +116,9 @@ class Base(object):
                         results[k] = None
 
     def _request(self, query):
-        response = yql.YQLQuery().execute(query)
+        if self._query is None:
+            self._query = yahoo_finance.yql.YQLQuery()
+        response = self._query.execute(query)
         try:
             _, results = response['query']['results'].popitem()
         except (KeyError, StopIteration):

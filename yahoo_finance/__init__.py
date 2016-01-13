@@ -177,11 +177,12 @@ class Currency(Base):
 
 class Share(Base):
 
-    def __init__(self, symbol):
+    def __init__(self, symbol, autorefresh=True):
         super(Share, self).__init__(symbol)
         self._table = 'quotes'
         self._key = 'symbol'
-        self.refresh()
+        if autorefresh:
+            self.refresh()
 
     def _fetch(self):
         data = super(Share, self)._fetch()

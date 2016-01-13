@@ -119,6 +119,8 @@ class Base(object):
         if self._query is None:
             self._query = yahoo_finance.yql.YQLQuery()
         response = self._query.execute(query)
+        if not response.get('query', {}).get('results'):
+            return None
         try:
             _, results = response['query']['results'].popitem()
         except (KeyError, StopIteration):
@@ -274,9 +276,10 @@ class Share(Base):
             try:
                 query = self._prepare_query(table='historicaldata', startDate=s, endDate=e)
                 result = self._request(query)
-                if isinstance(result, dict):
-                    result = [result]
-                hist.extend(result)
+                if result is not None:
+                    if isinstance(result, dict):
+                        result = [result]
+                    hist.extend(result)
             except AttributeError:
                 pass
         return hist

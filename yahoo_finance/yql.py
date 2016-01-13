@@ -34,9 +34,9 @@ __author__   = 'Dustin Whittle <dustin@yahoo-inc.com>'
 __version__  = '0.1'
 
 try:
-    from http.client import HTTPConnection
+    from http.client import HTTPConnection, HTTPException
 except ImportError:
-    from httplib import HTTPConnection
+    from httplib import HTTPConnection, HTTPException
 try:
     from urllib.parse import urlencode
 except ImportError:
@@ -57,7 +57,10 @@ class YQLQuery(object):
   def execute(self, yql, token = None):
 
     self.connection.request('GET', PUBLIC_API_URL + '?' + urlencode({ 'q': yql, 'format': 'json', 'env': DATATABLES_URL }))
-    return simplejson.loads(self.connection.getresponse().read())
+    response = self.connection.getresponse()
+    if response.status != 200:
+        raise HTTPException("Response failed %d - %s" % (response.status, response.reason))
+    return simplejson.loads(response.read())
 
   def __del__(self):
     self.connection.close()

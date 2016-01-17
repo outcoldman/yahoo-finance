@@ -52,12 +52,15 @@ DATATABLES_URL  = 'store://datatables.org/alltableswithkeys'
 class YQLQuery(object):
 
   def execute(self, yql, token = None):
-    self.connection = HTTPConnection('query.yahooapis.com')
+    connection = HTTPConnection('query.yahooapis.com')
+    response = None
     try:
-        self.connection.request('GET', PUBLIC_API_URL + '?' + urlencode({ 'q': yql, 'format': 'json', 'env': DATATABLES_URL }))
-        response = self.connection.getresponse()
+        connection.request('GET', PUBLIC_API_URL + '?' + urlencode({ 'q': yql, 'format': 'json', 'env': DATATABLES_URL }))
+        response = connection.getresponse()
         if response.status != 200:
             raise HTTPException("Response failed %d - %s" % (response.status, response.reason))
         return simplejson.loads(response.read())
     finally:
-        self.connection.close()
+        if response:
+            response.close()
+        connection.close()

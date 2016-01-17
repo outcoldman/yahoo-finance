@@ -47,8 +47,13 @@ DATATABLES_URL  = 'store://datatables.org/alltableswithkeys'
 
 class YQLQuery(object):
 
+    def __init__(self):
+        self.session = requests.Session()
+
     def execute(self, yql, token = None):
-        with requests.Session() as s:
-            r = s.get(PUBLIC_API_URL + '?' + urlencode({ 'q': yql, 'format': 'json', 'env': DATATABLES_URL }))
-            r.raise_for_status()
-            return r.json()
+        r = self.session.get(PUBLIC_API_URL + '?' + urlencode({ 'q': yql, 'format': 'json', 'env': DATATABLES_URL }))
+        r.raise_for_status()
+        return r.json()
+
+    def __del__(self):
+        self.session.close()

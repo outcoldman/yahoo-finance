@@ -34,15 +34,11 @@ __author__   = 'Dustin Whittle <dustin@yahoo-inc.com>'
 __version__  = '0.1'
 
 try:
-    from http.client import HTTPConnection, HTTPException
-except ImportError:
-    from httplib import HTTPConnection, HTTPException
-try:
     from urllib.parse import urlencode
 except ImportError:
     from urllib import urlencode
 
-import simplejson
+import requests
 
 # Yahoo! YQL API
 PUBLIC_API_URL  = 'https://query.yahooapis.com/v1/public/yql'
@@ -51,16 +47,8 @@ DATATABLES_URL  = 'store://datatables.org/alltableswithkeys'
 
 class YQLQuery(object):
 
-  def execute(self, yql, token = None):
-    connection = HTTPConnection('query.yahooapis.com')
-    response = None
-    try:
-        connection.request('GET', PUBLIC_API_URL + '?' + urlencode({ 'q': yql, 'format': 'json', 'env': DATATABLES_URL }))
-        response = connection.getresponse()
-        if response.status != 200:
-            raise HTTPException("Response failed %d - %s" % (response.status, response.reason))
-        return simplejson.loads(response.read())
-    finally:
-        if response:
-            response.close()
-        connection.close()
+    def execute(self, yql, token = None):
+        with requests.Session() as s:
+            r = s.get(PUBLIC_API_URL + '?' + urlencode({ 'q': yql, 'format': 'json', 'env': DATATABLES_URL }))
+            r.raise_for_status()
+            return r.json()

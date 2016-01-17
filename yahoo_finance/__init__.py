@@ -76,7 +76,6 @@ class Base(object):
         self.symbol = symbol
         self._table = ''
         self._key = ''
-        self._query = None
 
     def _prepare_query(self, table='quotes', key='symbol', **kwargs):
         """
@@ -116,9 +115,7 @@ class Base(object):
                         results[k] = None
 
     def _request(self, query):
-        if self._query is None:
-            self._query = yahoo_finance.yql.YQLQuery()
-        response = self._query.execute(query)
+        response = yahoo_finance.yql.YQLQuery().execute(query)
         if not response.get('query', {}).get('results'):
             return None
         try:
@@ -277,11 +274,15 @@ class Share(Base):
         for s, e in get_date_range(start_date, end_date):
             try:
                 query = self._prepare_query(table='historicaldata', startDate=s, endDate=e)
-                result = self._request(query)
-                if result is not None:
-                    if isinstance(result, dict):
-                        result = [result]
-                    hist.extend(result)
+                tries = 0
+                result = None
+                while result is None or tries >= 5:
+                    tries += 1
+                    result = self._request(query)
+                    if result is not None:
+                        if isinstance(result, dict):
+                            result = [result]
+                        hist.extend(result)
             except AttributeError:
                 pass
         return hist
